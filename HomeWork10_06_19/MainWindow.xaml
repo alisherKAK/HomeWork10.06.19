@@ -7,6 +7,11 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        
+        <DataGrid Name="processesDataGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Имя процесса" Binding="{Binding Name}" />
+            </DataGrid.Columns>
+        </DataGrid>
+
     </Grid>
 </Window>
