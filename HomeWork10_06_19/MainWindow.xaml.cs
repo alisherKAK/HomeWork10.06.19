@@ -15,6 +15,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Management;
+using System.ComponentModel;
 
 namespace HomeWork10_06_19
 {
@@ -29,18 +30,9 @@ namespace HomeWork10_06_19
         {
             InitializeComponent();
 
-            var processes = System.Diagnostics.Process.GetProcesses();
-            foreach(var process in processes)
-            {
-                ProcessDescription newProcessDescription = new ProcessDescription();
-                newProcessDescription.Name = process.ProcessName;
-                newProcessDescription.Id = process.Id;
-                newProcessDescription.State = process.Responding ? "Running" : "Stoped";
+            processesDataGrid.IsReadOnly = true;
 
-                _processDescriptions.Add(newProcessDescription);
-            }
-
-            processesDataGrid.ItemsSource = _processDescriptions;
+            UpdateProcessDataGrid();
         }
 
         private string GetProcessOwner(int processId)
@@ -60,7 +52,106 @@ namespace HomeWork10_06_19
                 }
             }
 
-            return "NO OWNER";
+            return "";
         }
+
+        private string GetCpuUsage(string processName)
+        {
+            using (PerformanceCounter pcProcess = new PerformanceCounter("Process", "% Processor Time", processName))
+            {
+                return pcProcess.NextValue().ToString();
+            }
+        }
+
+        private void UpdateProcessDataGrid()
+        {
+            _processDescriptions.Clear();
+
+            var processes = System.Diagnostics.Process.GetProcesses().OrderBy(process => process.ProcessName).ToList();
+            foreach (var process in processes)
+            {
+                ProcessDescription newProcessDescription = new ProcessDescription();
+                try
+                {
+                    newProcessDescription.Name = process.ProcessName;
+                    newProcessDescription.Id = process.Id;
+                    newProcessDescription.State = process.Responding ? "Running" : "Stoped";
+                    newProcessDescription.Memory = process.VirtualMemorySize64 / 1024;
+                    newProcessDescription.Owner = GetProcessOwner(process.Id);
+                    newProcessDescription.CpuUsage = GetCpuUsage(process.ProcessName);
+                    newProcessDescription.Despription = process.MainModule.FileVersionInfo.FileDescription;
+
+                    _processDescriptions.Add(newProcessDescription);
+                }
+                catch (Win32Exception)
+                {
+                    _processDescriptions.Add(newProcessDescription);
+                }
+                catch (InvalidOperationException)
+                {
+                    _processDescriptions.Add(newProcessDescription);
+                }
+            }
+
+            processesDataGrid.ItemsSource = _processDescriptions;
+        }
+
+        private void ProcessesDataGridPreviewKeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Delete)
+            {
+                var selectedProcess = processesDataGrid.SelectedItem as ProcessDescription;
+
+                try
+                {
+                    Process.GetProcessById(selectedProcess.Id).Kill();
+                }
+                catch (Win32Exception exception)
+                {
+                    MessageBox.Show(exception.Message);
+                }
+                catch (InvalidOperationException exception)
+                {
+                    MessageBox.Show(exception.Message);
+                }
+                catch (NotSupportedException exception)
+                {
+                    MessageBox.Show(exception.Message);
+                }
+                catch(ArgumentException exception)
+                {
+                    MessageBox.Show(exception.Message);
+                }
+            }
+        }
+
+        //private void processesDataGrid_KeyDown(object sender, KeyEventArgs e)
+        //{
+        //    if (e.Key == Key.Delete)
+        //    {
+        //        var selectedProcess = processesDataGrid.SelectedItem as ProcessDescription;
+
+        //        try
+        //        {
+        //            Process.GetProcessById(selectedProcess.Id).Kill();
+        //        }
+        //        catch (Win32Exception exception)
+        //        {
+        //            MessageBox.Show(exception.Message);
+        //        }
+        //        catch (InvalidOperationException exception)
+        //        {
+        //            MessageBox.Show(exception.Message);
+        //        }
+        //        catch (NotSupportedException exception)
+        //        {
+        //            MessageBox.Show(exception.Message);
+        //        }
+        //        catch (ArgumentException exception)
+        //        {
+        //            MessageBox.Show(exception.Message);
+        //        }
+        //    }
+        //}
     }
 }

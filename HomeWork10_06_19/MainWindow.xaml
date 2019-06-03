@@ -7,9 +7,15 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
-        <DataGrid Name="processesDataGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="False">
+        <DataGrid Name="processesDataGrid" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" AutoGenerateColumns="False" PreviewKeyDown="ProcessesDataGridPreviewKeyDown">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Имя процесса" Binding="{Binding Name}" />
+                <DataGridTextColumn Header="ИД процесса" Binding="{Binding Id}" />
+                <DataGridTextColumn Header="Состояние" Binding="{Binding State}" />
+                <DataGridTextColumn Header="Имя пользователя" Binding="{Binding Owner}" />
+                <DataGridTextColumn Header="ЦП" Binding="{Binding CpuUsage}" />
+                <DataGridTextColumn Header="Память" Binding="{Binding Memory}" />
+                <DataGridTextColumn Header="Описание" Binding="{Binding Description}" />
             </DataGrid.Columns>
         </DataGrid>
 
